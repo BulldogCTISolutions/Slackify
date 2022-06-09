@@ -1,0 +1,7 @@
+
+//  To keep Tailwindcss always generating utility classes.
+//	Must be in project folder, not solution folder.
+//	Adding --watch on the end keeps the process always running.
+
+npx tailwindcss -i Styles/app.css -o wwwroot/css/app.css --watch
+
