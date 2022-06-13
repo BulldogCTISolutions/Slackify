@@ -5,3 +5,10 @@
 
 npx tailwindcss -i Styles/app.css -o wwwroot/css/app.css --watch
 
+
+//	Setup DotNet secret store
+dotnet user-secrets init
+dotnet user-secrets set "Authentication:Google:ClientId" "<client-id>"
+dotnet user-secrets set "Authentication:Google:ClientSecret" "<client-secret>"
+
+//	Need Nuget package Microsoft.AspNetCore.Authentication.Google
