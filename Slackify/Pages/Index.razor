@@ -1,6 +1,17 @@
 ﻿@page "/"
 
-<div class="flex bg-slack_bg h-screen w-full">
-    <Sidebar></Sidebar>
-    <ChatContainer></ChatContainer>
-</div>
+<AuthorizeView>
+    <NotAuthorized>
+        <Login />
+    </NotAuthorized>
+    
+    <Authorized>
+        <NavMenu profileImageUrl="@context.User.Claims.Where(user => user.Type == "picture").FirstOrDefault().Value"/>
+        <div class="flex h-screen w-full">
+            <Sidebar></Sidebar>
+            <ChatContainer></ChatContainer>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+

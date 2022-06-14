@@ -5,7 +5,7 @@
 
 npx tailwindcss -i Styles/app.css -o wwwroot/css/app.css --watch
 
-
+//  https://docs.microsoft.com/en-us/aspnet/core/security/authentication/social/google-logins?view=aspnetcore-6.0
 //	Setup DotNet secret store
 dotnet user-secrets init
 dotnet user-secrets set "Authentication:Google:ClientId" "<client-id>"

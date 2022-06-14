@@ -1,6 +1,15 @@
 ﻿<div class="flex fixed justify-between bg-slack_nav w-full py-2 px-4 items-center">
     <div class="px-4">
-        <span class="iconify text-white" data-icon="carbon:user-avatar-filled-alt" data-width="30"></span>
+        <img src="@profileImageUrl"
+             class="h-10 rounded-full cursor-pointer shadow"
+             @onclick="@ShouldShow"
+             />
+        <div class="@CssClass("absolute", "bg-gray-200", "flex", "flex-col", "rounded", "mt-1", "p-2", "text-sm", "z-50", new {hidden})">
+            <a href="auth/signout" class="flex hover:bg-blue-200 px-4 py-2 cursor-pointer rounded">
+                <span class="iconify mr-2 mt=0.5" data-icon="mdi-light:logout" data-flip="horizontal" data-width="16"></span>
+                <span class="">Log Out</span>
+            </a>
+        </div>
     </div>
 
     <HeaderSearch />
@@ -9,3 +18,21 @@
         <span class="iconify mt-1 m-auto text-white" data-icon="simple-line-icons:question" data-width="20"></span>
     </div>
 </div>
+
+@code
+{
+    [Parameter]
+    public string profileImageUrl { get; set; }
+
+    private bool hidden { get; set; }
+
+    protected override void OnInitialized()
+    {
+        this.hidden = true;
+    }
+
+    protected void ShouldShow(MouseEventArgs e)
+    {
+        hidden = !hidden;
+    }
+}
