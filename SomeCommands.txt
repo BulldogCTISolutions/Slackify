@@ -2,13 +2,20 @@
 //  To keep Tailwindcss always generating utility classes.
 //	Must be in project folder, not solution folder.
 //	Adding --watch on the end keeps the process always running.
+//	Must be in project directory
 
 npx tailwindcss -i Styles/app.css -o wwwroot/css/app.css --watch
 
 //  https://docs.microsoft.com/en-us/aspnet/core/security/authentication/social/google-logins?view=aspnetcore-6.0
 //	Setup DotNet secret store
+//	Must be in project directory
 dotnet user-secrets init
 dotnet user-secrets set "Authentication:Google:ClientId" "<client-id>"
 dotnet user-secrets set "Authentication:Google:ClientSecret" "<client-secret>"
+dotnet user-secrets list
 
 //	Need Nuget package Microsoft.AspNetCore.Authentication.Google
+
+//	Entity Framework commands from the 'package manager console'
+add-migration "initialmigration_dbsetup"
+update-database
