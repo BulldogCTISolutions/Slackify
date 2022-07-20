@@ -21,10 +21,11 @@ namespace Slackify.Controllers
         [HttpGet("google-login")]
         public async Task LoginAsync()
         {
-            await HttpContext.ChallengeAsync(GoogleDefaults.AuthenticationScheme, new AuthenticationProperties()
-            {
-                RedirectUri = "/"
-            });
+            await HttpContext.ChallengeAsync( GoogleDefaults.AuthenticationScheme,
+                                              new AuthenticationProperties()
+                {
+                    RedirectUri = Url.Action( nameof( LoginCallBack ) )
+                } );
         }
 
         [HttpGet]
@@ -36,7 +37,7 @@ namespace Slackify.Controllers
 
             User userInDb = await this.userService.GetUserByEmail( email );
 
-            if( userInDb == null )
+            if( userInDb is null )
             {
                 await SaveUserDetails( result );
             }
@@ -52,11 +53,22 @@ namespace Slackify.Controllers
         }
 
         //  TODO: should not be in a controller, should be in a service.
-        private Task SaveUserDetails( AuthenticateResult result )
+        //  might need to pass httpContext to service.
+        private async Task SaveUserDetails( AuthenticateResult result )
         {
             string email = result.Principal.FindFirst( ClaimTypes.Email ).Value;
             string userName = result.Principal.FindFirst( ClaimTypes.Name ).Value;
             string picture = User.Claims.Where( c => c.Type == "picture" ).FirstOrDefault().Value;
+
+            User user = new User
+            {
+                UserName = userName,
+                Email = email,
+                Picture = picture,
+                DateJoined = DateTime.Now
+            };
+
+            await this.userService.RegisterUser( user );
         }
     }
 }

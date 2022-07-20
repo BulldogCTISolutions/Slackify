@@ -22,9 +22,8 @@ public class AuthSchemeInstaller : IInstaller
             } )
             .AddGoogle( googleOptions =>
             {
-                IConfigurationSection googleAuthSection = configuration.GetSection( "Authentication:Google" );
-                googleOptions.ClientId = googleAuthSection["Authentication:Google:ClientId"];
-                googleOptions.ClientSecret = googleAuthSection["Authentication:Google:ClientSecret"];
+                googleOptions.ClientId = configuration.GetSection( "Authentication:Google:ClientId" ).Value;
+                googleOptions.ClientSecret = configuration.GetSection( "Authentication:Google:ClientSecret" ).Value;
 
                 googleOptions.Scope.Add( "Profile" );
                 googleOptions.Events.OnCreatingTicket = context =>

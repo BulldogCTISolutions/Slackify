@@ -6,5 +6,7 @@ public class ServiceInstaller : IInstaller
     {
         services.AddRazorPages();
         services.AddServerSideBlazor();
+
+        services.AddScoped<IUserService, UserService>();
     }
 }

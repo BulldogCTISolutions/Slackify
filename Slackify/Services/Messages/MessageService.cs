@@ -15,7 +15,7 @@ public class MessageService : IMessageService
 
     public async ValueTask<Message> GetMessageByEmail( string email )
     {
-        Message messageInDb = await this.dbContext.Messages.Where( m => m.Email == email ).SingleOrDefaultAsync();
+        Message messageInDb = await this.dbContext.Messages.Where( m => m.Chat == email ).SingleOrDefaultAsync();
         return messageInDb;
     }
 
