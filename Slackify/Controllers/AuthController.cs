@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Slackify.Controllers
 {
-    [Route("[controller]")]
+    [Route( "[controller]" )]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -18,14 +18,14 @@ namespace Slackify.Controllers
             this.userService = service;
         }
 
-        [HttpGet("google-login")]
+        [HttpGet( "google-login" )]
         public async Task LoginAsync()
         {
             await HttpContext.ChallengeAsync( GoogleDefaults.AuthenticationScheme,
                                               new AuthenticationProperties()
-                {
-                    RedirectUri = Url.Action( nameof( LoginCallBack ) )
-                } );
+                                              {
+                                                  RedirectUri = Url.Action( nameof( LoginCallBack ) )
+                                              } );
         }
 
         [HttpGet]
@@ -45,11 +45,11 @@ namespace Slackify.Controllers
             return Redirect( "https://localhost:44374" );
         }
 
-        [HttpGet("signout")]
+        [HttpGet( "signout" )]
         public async Task<IActionResult> LogoutAsync()
         {
             await HttpContext.SignOutAsync();
-            return Redirect("~/");
+            return Redirect( "~/" );
         }
 
         //  TODO: should not be in a controller, should be in a service.
