@@ -32,25 +32,39 @@ public class ChatHub : Hub
 
     public override async Task OnConnectedAsync()
     {
-        string userEmail = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Email ).FirstOrDefault().Value;
-        string userName = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Name ).FirstOrDefault().Value;
+        try
+        {
+            string userEmail = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Email ).FirstOrDefault().Value;
+            string userName = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Name ).FirstOrDefault().Value;
 
-        string key = $"{userEmail}-{userName}";
+            string key = $"{userEmail}-{userName}";
 
-        this._connectionManager.Add( key, GetConnectionId() );
+            this._connectionManager.Add( key, GetConnectionId() );
+        }
+        catch( NullReferenceException )
+        {
+            //  TODO: Handle exceptions
+        }
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync( Exception exception )
     {
-        string userEmail = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Email ).FirstOrDefault().Value;
-        string userName = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Name ).FirstOrDefault().Value;
+        try
+        {
+            string userEmail = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Email ).FirstOrDefault().Value;
+            string userName = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Name ).FirstOrDefault().Value;
 
-        string key = $"{userEmail}-{userName}";
+            string key = $"{userEmail}-{userName}";
 
-        this._connectionManager.Remove( key, GetConnectionId() );
+            this._connectionManager.Remove( key, GetConnectionId() );
 
-        await Clients.All.SendAsync( "UserDisconnected", userEmail );
+            await Clients.All.SendAsync( "UserDisconnected", userEmail );
+        }
+        catch( NullReferenceException )
+        {
+            //  TODO: Handle exceptions
+        }
         await base.OnDisconnectedAsync( exception );
     }
 
