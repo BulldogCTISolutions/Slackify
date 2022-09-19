@@ -2,12 +2,12 @@
 
 namespace Slackify.Models;
 
-public class User
+public record User
 {
     public User()
     {
-        ChatMessagesFromUsers = new HashSet<Message>();
-        ChatMessagesToUsers = new HashSet<Message>();
+        this.ChatMessagesFromUsers = new HashSet<Message>();
+        this.ChatMessagesToUsers = new HashSet<Message>();
     }
 
     [Key]
@@ -16,6 +16,6 @@ public class User
     public string Email { get; set; }
     public string Picture { get; set; }
     public DateTime DateJoined { get; set; }
-    public virtual ICollection<Message> ChatMessagesFromUsers { get; set; }
-    public virtual ICollection<Message> ChatMessagesToUsers { get; set; }
+    public virtual ICollection<Message> ChatMessagesFromUsers { get; }
+    public virtual ICollection<Message> ChatMessagesToUsers { get; }
 }

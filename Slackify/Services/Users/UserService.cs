@@ -2,11 +2,11 @@
 
 public class UserService : IUserService
 {
-    private SlackifyDbContext dbContext;
+    private readonly SlackifyDbContext _dbContext;
 
     public UserService( SlackifyDbContext dbContext )
     {
-        this.dbContext = dbContext;
+        this._dbContext = dbContext;
     }
     public ValueTask<ICollection<User>> GetAllUsers()
     {
@@ -15,20 +15,24 @@ public class UserService : IUserService
 
     public async ValueTask<User> GetUserByEmail( string email )
     {
-        User userInDb = await this.dbContext.Users.Where( u => u.Email == email ).SingleOrDefaultAsync();
+        User userInDb = await this._dbContext.Users.Where( u => u.Email == email )
+                                                  .SingleOrDefaultAsync()
+                                                  .ConfigureAwait( false );
         return userInDb;
     }
 
     public async ValueTask<User> GetUserById( int id )
     {
-        User userInDb = await this.dbContext.Users.Where( u => u.Id == id ).SingleOrDefaultAsync();
+        User userInDb = await this._dbContext.Users.Where( u => u.Id == id )
+                                                  .SingleOrDefaultAsync()
+                                                  .ConfigureAwait( false );
         return userInDb;
     }
 
     public async ValueTask<User> RegisterUser( User user )
     {
-        this.dbContext.Users.Add( user );
-        await this.dbContext.SaveChangesAsync();
+        _ = this._dbContext.Users.Add( user );
+        _ = await this._dbContext.SaveChangesAsync().ConfigureAwait( false );
 
         return user;
     }

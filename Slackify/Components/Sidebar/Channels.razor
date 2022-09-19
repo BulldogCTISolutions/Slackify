@@ -1,9 +1,4 @@
-﻿@using System.Net
-@using System.Security.Claims
-@using Microsoft.AspNetCore.SignalR;
-@using Microsoft.AspNetCore.SignalR.Client;
-@using Slackify.Models.DTOs;
-
+﻿
 @inject NavigationManager NavigationManager;
 
 @implements IAsyncDisposable;
@@ -56,23 +51,15 @@
         </ul>
 
         <ul>
-            <li class="py-2 pl-4 cursor-pointer">
-                <div class="flex w-full">
-                    <span class="iconify text-white font-semibold mr-2 mt-1" data-icon="carbon:user-online" data-width="18"></span>
-                    <h2 class="text-base text-white">@context.User.Claims.Where(c => c.Type == ClaimTypes.Name).SingleOrDefault().Value</h2>
-                </div>
-            </li>
-            @foreach( UsersForListingDTO user in _previousChatUserList )
+            @foreach( UsersForListing user in _previousChatUserList )
             {
-                @if( user.Email != context.User.Claims.Where(c => c.Type == ClaimTypes.Email).SingleOrDefault().Value )
-                {
-                    <li class="py-2 pl-4 cursor-pointer">
-                        <div class="flex w-full">
-                            <span class="iconify text-white font-semibold mr-2 mt-1" data-icon="carbon:user-online" data-width="18"></span>
-                            <h2 class="text-base text-white">@user.UserName</h2>
-                        </div>
-                    </li>
-                }
+                string userURL = $"/client/DM-{user.Email}-{user.UserId}-{user.UserName}";
+                <li class="py-2 pl-4 cursor-pointer hover:bg-neutral-900/50">
+                    <NavLink class="iconify flex text-white" href="@userURL">
+                        <span class="iconify text-white font-semibold mr-2 mt-1" data-icon="carbon:user-online" data-width="20"></span>
+                        @user.UserName
+                    </NavLink>
+                </li>
             }
         </ul>
 
@@ -82,7 +69,7 @@
 @code
 {
     private HubConnection _hubConnection;
-    private ICollection<UsersForListingDTO> _previousChatUserList = new List<UsersForListingDTO>();
+    private ICollection<UsersForListing> _previousChatUserList = new List<UsersForListing>();
 
     [Inject]
     public CookiesProvider cookiesProvider { get; set; }
@@ -112,19 +99,24 @@
                 .Build();
         }
 
-        _hubConnection.On<Dictionary<string, HashSet<string>>>( "ReceiveInitializeUsersList", ( list ) =>
+        _hubConnection.On<List<string>>( "ReceiveInitializeUsersList", ( list ) =>
         {
-            foreach( var user in list )
+            foreach( string user in list )
             {
-                string[] dataArray = user.Key.Split( "-" );
+                string[] dataArray = user.Split( "-" );
                 string userEmail = dataArray[0];
                 string userName = dataArray[1];
+                int userId = Convert.ToInt32( dataArray[2] );//   TODO:  Use TryParse?
 
-                this._previousChatUserList.Add( new UsersForListingDTO
-                    {
-                        Email = userEmail,
-                        UserName = userName
-                    } );
+                if( this._previousChatUserList.Any( u => u.Email == userEmail ) == false ) //   TODO: Use string.Equals()
+                {
+                    this._previousChatUserList.Add( new UsersForListing
+                        {
+                            Email = userEmail,
+                            UserName = userName,
+                            UserId = userId
+                        } );
+                }
             }
 
             InvokeAsync( () => StateHasChanged() );
@@ -145,7 +137,7 @@
 
     public async ValueTask DisposeAsync()
     {
-        if( _hubConnection is not null)
+        if( _hubConnection is not null )
         {
             await _hubConnection.DisposeAsync();
         }

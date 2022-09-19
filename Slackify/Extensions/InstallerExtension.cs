@@ -1,4 +1,6 @@
-﻿namespace Slackify.Extensions;
+﻿using Slackify.Installers;
+
+namespace Slackify.Extensions;
 
 public static class InstallerExtension
 {

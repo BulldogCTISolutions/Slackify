@@ -1,17 +1,17 @@
-var builder = WebApplication.CreateBuilder( args );
+ÔªøWebApplicationBuilder builder = WebApplication.CreateBuilder( args );
 
 //  Add keys and secrets to builder configuration
 builder.Configuration.SetBasePath( AppDomain.CurrentDomain.BaseDirectory )
                      .AddEnvironmentVariables()
                      .AddJsonFile( "appsettings.json" )
-//  Passing ìfalseî as the second variable for UserSecrets. Thatís because in .NET 6, User Secrets were made ìrequiredî by default and by passing true, we make them optional. 
+//  Passing ‚Äúfalse‚Äù as the second variable for UserSecrets. That‚Äôs because in .NET 6, User Secrets were made ‚Äúrequired‚Äù by default and by passing true, we make them optional. 
                      .AddUserSecrets<Program>( false )
                      .Build();
 
 //  Add services to the container.
 Slackify.Extensions.InstallerExtension.InstallServicesInAssembly( builder.Services, builder.Configuration );
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 //  Configure the HTTP request pipeline.
 if( app.Environment.IsDevelopment() == false )

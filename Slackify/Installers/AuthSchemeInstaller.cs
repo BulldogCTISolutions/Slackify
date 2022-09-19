@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 
 namespace Slackify.Installers;
@@ -10,7 +8,7 @@ public class AuthSchemeInstaller : IInstaller
     public void InstallService( IServiceCollection services, IConfiguration configuration )
     {
         //  Add Google OAuth
-        services.AddAuthentication( authenticationOptions =>
+        _ = services.AddAuthentication( authenticationOptions =>
         {
             authenticationOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             authenticationOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;

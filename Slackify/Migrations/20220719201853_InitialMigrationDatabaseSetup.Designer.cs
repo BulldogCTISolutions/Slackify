@@ -13,7 +13,7 @@ namespace Slackify.Migrations
 {
     [DbContext(typeof(SlackifyDbContext))]
     [Migration("20220719201853_initialmigration_dbsetup")]
-    partial class initialmigration_dbsetup
+    partial class InitialMigrationDatabaseSetup
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

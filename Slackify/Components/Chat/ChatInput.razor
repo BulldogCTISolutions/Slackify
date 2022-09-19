@@ -1,7 +1,109 @@
-﻿<div>
-    <form class="relative flex justify-center">
-        <input class="fixed p-2 text-base rounded outline-none bottom-7 border border-gray-800 w-[60%]"
-               type="text" placeholder="Message #blazor-engineering"/>
-        <button type="submit" class="hidden">Send</button>
-    </form>
+﻿@inject NavigationManager navigationManager;
+@inject IUserService userService;
+@inject IMessageService messageService;
+
+@implements IAsyncDisposable;
+
+<div UserEmail="@UserEmail">
+    <EditForm Model="_chatMessage" OnValidSubmit="OnSubmit" class="relative flex justify-center">
+        <input type="text" class="fixed p-2 text-base w-[60%] outline-none border border-gray-800 rounded bottom-7"
+               placeholder="Message #blazor-engineering" @ref="_elementReference" @bind="_messageInput" />
+        <button type="submit" onclick="Send" class="hidden">Send</button>
+    </EditForm>
 </div>
+
+@code
+{
+    [CascadingParameter]
+    public string ResourceParameter { get; set; }
+
+    [Inject]
+    public CookiesProvider CookiesProvider { get; set; }
+
+    [Parameter]
+    public string UserEmail { get; set; }
+
+    private ElementReference _elementReference;
+    private HubConnection _hubConnection;
+    private string _messageInput;
+    private ChatMessage _chatMessage = new();
+
+    protected override void OnAfterRender( bool firstRender )
+    {
+        _elementReference.FocusAsync();
+    }
+
+    public async Task OnSubmit()
+    {
+        await Task.CompletedTask;
+        return;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CookieContainer cookieContainer = new CookieContainer();
+        Cookie cookie = new Cookie()
+            {
+                Name = "SlackifyAuthenticationCookie",
+                Domain = "localhost",
+                Value = CookiesProvider.Cookie
+            };
+
+        cookieContainer.Add( cookie );
+
+        if( CookiesProvider.Cookie == null )
+        {
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl( navigationManager.ToAbsoluteUri( "/chat" ) )
+                .Build();
+        }
+        else
+        {
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl( navigationManager.ToAbsoluteUri( "/chat" ), option => option.Cookies = cookieContainer )
+                .Build();
+        }
+
+        await _hubConnection.StartAsync();
+    }
+
+    public async Task Send()
+    {
+        //  Was a fellow user selected?
+        if( string.IsNullOrEmpty( this.ResourceParameter ) == true )
+        {
+            return;
+        }
+
+        //  Extracted from the user's queryString URL.
+        string[] resourceArray = this.ResourceParameter.Split( "-" );
+        //  Split the queryString to get user's Id and Email.
+        string resourceKey = resourceArray[0];
+        string resourceEmail = resourceArray[1];
+        int resourceId = Convert.ToInt32( resourceArray[2] );  // TODO:  TryParse
+        string resourceName = resourceArray[3];
+
+        //  Send the message through the SignalR Chat Hub.
+        await _hubConnection.SendAsync( "SendMessage", resourceId, _messageInput );
+
+        //  Save the message in our database.
+        User receiverUser = await this.userService.GetUserByEmail( resourceEmail );
+        User senderUser = await this.userService.GetUserByEmail( this.UserEmail );
+
+        await this.messageService.SaveMessage( new Message
+            {
+                FromUserId = senderUser.Id,
+                ToUserId = receiverUser.Id,
+                Chat = _messageInput,
+                CreatedDate = DateTime.Now
+            } );
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if( this._hubConnection is not null )
+        {
+            await this._hubConnection.DisposeAsync();
+        }
+    }
+}

@@ -1,22 +1,144 @@
-﻿<div class="w-3/4 mt-[60px]">
-    <div class="flex flex-col">
-        <ChatHeader/>
+﻿@using Slackify.Models;
 
-        <div class="flex h-[45rem] overflow-y-scroll scrollbar relative flex-col-reverse">
-            <ChatMessage/>
-            <ChatMessage/>
-            <ChatMessage/>
-            <ChatMessage/>
-            <ChatMessage/>
-            <ChatMessage/>
-            <ChatMessage/>
-            <ChatMessage/>
-            <ChatMessage/>
-            <ChatMessage/>
-            <ChatMessage/>
-            <ChatMessage/>
+@inject NavigationManager NavigationManager;
+@inject IUserService userService;
+@inject IMessageService messageService;
+@inject AutoMapper.IMapper mapper;
+
+@implements IAsyncDisposable;
+
+<div UserEmail="@UserEmail" class="w-3/4 mt-[60px]">
+    <div class="flex flex-col">
+        <ChatHeader ChatHeaderTitle="@ChatHeaderTitle" />
+
+        <div class="flex h-[550px] overflow-y-scroll scrollbar relative flex-col-reverse">
+            @if( _userMessages.Count() < 1 )
+            {
+                if( string.IsNullOrEmpty( ResourceParameter ) == true )
+                {
+                    <div class="m-auto text-center">
+                        <img src="images/slack.png" class="w-48" />
+                        <h2>Welcome to Slackify Messenger</h2>
+                    </div>
+                }
+            }
+            @foreach( MessagePack message in _userMessages )
+            {
+                <ChatMessage Text="@message.Message" UserName="@message.UserName" pictureURL="@message.Picture" />
+            }
+            <ChatMessage />
         </div>
 
-        <ChatInput/>
+        <ChatInput userEmail="@UserEmail" />
     </div>
 </div>
+
+@code
+{
+    private HubConnection _hubConnection;
+    private List<MessagePack> _userMessages = new();
+
+    [CascadingParameter]
+    public string ResourceParameter { get; set; }
+    [Parameter]
+    public string UserEmail { get; set; }
+
+    public bool IsLoading { get; set; } = false;
+    public string PreviousResourceParameter { get; set; } = string.Empty;
+    public string ChatHeaderTitle { get; set; } = "Slackifying with Blazor, Tailwindcss, and SignalR";
+
+    [Inject]
+    public CookiesProvider cookiesProvider { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CookieContainer cookieContainer = new CookieContainer();
+        Cookie cookie = new Cookie()
+            {
+                Name = "SlackifyAuthenticationCookie",
+                Domain = "localhost",
+                Value = cookiesProvider.Cookie
+            };
+
+        cookieContainer.Add( cookie );
+
+        if( cookiesProvider.Cookie == null )
+        {
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl( NavigationManager.ToAbsoluteUri( "/chat" ) )
+                .Build();
+        }
+        else
+        {
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl( NavigationManager.ToAbsoluteUri( "/chat" ), option => option.Cookies = cookieContainer )
+                .Build();
+        }
+
+        _hubConnection.On<MessagePack>( "ReceivePrivateMessage", messagePack =>
+        {
+            this._userMessages.Add( messagePack );
+            this._userMessages = this._userMessages.OrderByDescending( message => message.CreatedAt ).ToList();
+            InvokeAsync( () => StateHasChanged() );
+        } );
+
+        await _hubConnection.StartAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync( bool firstRender )
+    {
+        if( this.ResourceParameter == this.PreviousResourceParameter )
+        {
+            return;
+        }
+
+        this.PreviousResourceParameter = this.ResourceParameter;
+
+        //  Extracted from the user's queryString URL.
+        string[] resourceArray = this.ResourceParameter.Split( "-" );
+        //  Split the queryString to get user's Id and Email.
+        string resourceKey = resourceArray[0];
+        string resourceEmail = resourceArray[1];
+        int resourceId = Convert.ToInt32( resourceArray[2] );  // TODO:  TryParse
+        string resourceName = resourceArray[3];
+
+        User sender = await this.userService.GetUserByEmail( UserEmail );
+
+        ICollection<Message> messages = new List<Message>();
+        ICollection<MessagePack> messagePacks = new List<MessagePack>();
+
+        messages = await this.messageService.GetConversations( sender.Id, resourceId );
+
+        messagePacks = await this.mapper.Map<ICollection<Message>, ICollection<MessagePack>>( messages );
+
+        this._userMessages = messagePacks.ToList();
+        this.IsLoading = false;
+
+        switch( resourceKey )
+        {
+            case "DM":
+                {
+                //
+                }
+                break;
+            case "CH":
+                {
+                //
+                }
+                break;
+            default:
+                {
+                    //
+                }
+                break;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if( _hubConnection is not null )
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+}

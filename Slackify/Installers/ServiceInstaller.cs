@@ -7,6 +7,7 @@ public class ServiceInstaller : IInstaller
     public void InstallService( IServiceCollection services, IConfiguration configuration )
     {
         services.AddScoped<CookiesProvider>();
+        services.AddAutoMapper( typeof( SlackifyProfile ) );
 
         services.AddSignalR( config => config.EnableDetailedErrors = true );
         services.AddResponseCompression( opt =>
@@ -17,5 +18,6 @@ public class ServiceInstaller : IInstaller
         services.AddServerSideBlazor();
         services.AddSingleton<ConnectionManager>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IMessageService, MessageService>();
     }
 }

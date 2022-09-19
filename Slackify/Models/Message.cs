@@ -2,7 +2,7 @@
 
 namespace Slackify.Models;
 
-public class Message
+public record Message
 {
     [Key]
     public int Id { get; set; }

@@ -1,8 +1,4 @@
-﻿using System.Security.Claims;
-
-using Microsoft.AspNetCore.SignalR;
-
-namespace Slackify.Hubs;
+﻿namespace Slackify.Hubs;
 
 public class ChatHub : Hub
 {
@@ -17,16 +13,16 @@ public class ChatHub : Hub
 
     public async Task InitializeUserList()
     {
-        Dictionary<string, HashSet<string>> list = this._connectionManager.GetUsers();
+        IEnumerable<string> list = this._connectionManager.GetUsers();
 
-        await Clients.All.SendAsync( "ReceiveInitializeUsersList", list );
+        await this.Clients.All.SendAsync( "ReceiveInitializeUsersList", list ).ConfigureAwait( false );
     }
 
     public void AddUserToRoom( string userEmail )
     {
-        string currentUser = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Email ).FirstOrDefault().Value;
+        string currentUser = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email ).Value;
 
-        string connectionId = GetConnectionId();
+        string connectionId = this.GetConnectionId();
         this._connectionManager.Add( currentUser, connectionId );
     }
 
@@ -34,39 +30,44 @@ public class ChatHub : Hub
     {
         try
         {
-            string userEmail = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Email ).FirstOrDefault().Value;
-            string userName = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Name ).FirstOrDefault().Value;
+            string userEmail = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email ).Value;
+            string userName = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Name ).Value;
+            User userInDatabase = await this._userService.GetUserByEmail( userEmail ).ConfigureAwait( false );
 
-            string key = $"{userEmail}-{userName}";
+            string key = $"{userEmail}-{userName}-{userInDatabase.Id}";
 
-            this._connectionManager.Add( key, GetConnectionId() );
+            this._connectionManager.Add( key, this.GetConnectionId() );
         }
         catch( NullReferenceException )
         {
             //  TODO: Handle exceptions
         }
-        await base.OnConnectedAsync();
+        await base.OnConnectedAsync().ConfigureAwait( false );
     }
 
     public override async Task OnDisconnectedAsync( Exception exception )
     {
         try
         {
-            string userEmail = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Email ).FirstOrDefault().Value;
-            string userName = Context.User.Claims.Where( claim => claim.Type == ClaimTypes.Name ).FirstOrDefault().Value;
+            string userEmail = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email ).Value;
+            string userName = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Name ).Value;
+            User userInDatabase = await this._userService.GetUserByEmail( userEmail ).ConfigureAwait( false );
 
-            string key = $"{userEmail}-{userName}";
+            string key = $"{userEmail}-{userName}-{userInDatabase.Id}";
 
-            this._connectionManager.Remove( key, GetConnectionId() );
+            this._connectionManager.Remove( key, this.GetConnectionId() );
 
-            await Clients.All.SendAsync( "UserDisconnected", userEmail );
+            await this.Clients.All.SendAsync( "UserDisconnected", userEmail ).ConfigureAwait( false );
         }
         catch( NullReferenceException )
         {
             //  TODO: Handle exceptions
         }
-        await base.OnDisconnectedAsync( exception );
+        await base.OnDisconnectedAsync( exception ).ConfigureAwait( false );
     }
 
-    private string GetConnectionId() => Context.ConnectionId;
+    private string GetConnectionId()
+    {
+        return this.Context.ConnectionId;
+    }
 }

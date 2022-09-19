@@ -1,4 +1,4 @@
-﻿namespace Slackify.Installers.Interface;
+﻿namespace Slackify.Installers;
 
 public interface IInstaller
 {

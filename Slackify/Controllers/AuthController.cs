@@ -1,74 +1,72 @@
-﻿using System.Security.Claims;
-
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Slackify.Controllers
+namespace Slackify.Controllers;
+
+[Route( "[controller]" )]
+[ApiController]
+public class AuthController : ControllerBase
 {
-    [Route( "[controller]" )]
-    [ApiController]
-    public class AuthController : ControllerBase
+    private readonly IUserService _userService;
+
+    public AuthController( IUserService service )
     {
-        private readonly IUserService userService;
+        this._userService = service;
+    }
 
-        public AuthController( IUserService service )
+    [HttpGet( "google-login" )]
+    public async Task LoginAsync()
+    {
+        await this.HttpContext.ChallengeAsync( GoogleDefaults.AuthenticationScheme,
+                                          new AuthenticationProperties()
+                                          {
+                                              RedirectUri = this.Url.Action( nameof( LoginCallBack ) )
+                                          } ).ConfigureAwait( false );
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> LoginCallBack()
+    {
+        AuthenticateResult result = await this.HttpContext.AuthenticateAsync( CookieAuthenticationDefaults.AuthenticationScheme )
+                                                     .ConfigureAwait( false );
+
+        string email = result.Principal.FindFirst( ClaimTypes.Email ).Value;
+
+        User userInDb = await this._userService.GetUserByEmail( email ).ConfigureAwait( false );
+
+        if( userInDb is null )
         {
-            this.userService = service;
+            await this.SaveUserDetails( result ).ConfigureAwait( false );
         }
 
-        [HttpGet( "google-login" )]
-        public async Task LoginAsync()
+        return this.Redirect( "https://localhost:44374" );
+    }
+
+    [HttpGet( "signout" )]
+    public async Task<IActionResult> LogoutAsync()
+    {
+        await this.HttpContext.SignOutAsync().ConfigureAwait( false );
+        return this.Redirect( "~/" );
+    }
+
+    //  TODO: should not be in a controller, should be in a service.
+    //  might need to pass httpContext to service.
+    private async Task SaveUserDetails( AuthenticateResult result )
+    {
+        string email = result.Principal.FindFirst( ClaimTypes.Email ).Value;
+        string userName = result.Principal.FindFirst( ClaimTypes.Name ).Value;
+        string picture = this.User.Claims.FirstOrDefault( c => c.Type == "picture" ).Value;
+
+        User user = new()
         {
-            await HttpContext.ChallengeAsync( GoogleDefaults.AuthenticationScheme,
-                                              new AuthenticationProperties()
-                                              {
-                                                  RedirectUri = Url.Action( nameof( LoginCallBack ) )
-                                              } );
-        }
+            UserName = userName,
+            Email = email,
+            Picture = picture,
+            DateJoined = DateTime.Now
+        };
 
-        [HttpGet]
-        public async Task<IActionResult> LoginCallBack()
-        {
-            AuthenticateResult result = await HttpContext.AuthenticateAsync( CookieAuthenticationDefaults.AuthenticationScheme );
-
-            string email = result.Principal.FindFirst( ClaimTypes.Email ).Value;
-
-            User userInDb = await this.userService.GetUserByEmail( email );
-
-            if( userInDb is null )
-            {
-                await SaveUserDetails( result );
-            }
-
-            return Redirect( "https://localhost:44374" );
-        }
-
-        [HttpGet( "signout" )]
-        public async Task<IActionResult> LogoutAsync()
-        {
-            await HttpContext.SignOutAsync();
-            return Redirect( "~/" );
-        }
-
-        //  TODO: should not be in a controller, should be in a service.
-        //  might need to pass httpContext to service.
-        private async Task SaveUserDetails( AuthenticateResult result )
-        {
-            string email = result.Principal.FindFirst( ClaimTypes.Email ).Value;
-            string userName = result.Principal.FindFirst( ClaimTypes.Name ).Value;
-            string picture = User.Claims.Where( c => c.Type == "picture" ).FirstOrDefault().Value;
-
-            User user = new User
-            {
-                UserName = userName,
-                Email = email,
-                Picture = picture,
-                DateJoined = DateTime.Now
-            };
-
-            await this.userService.RegisterUser( user );
-        }
+        _ = await this._userService.RegisterUser( user ).ConfigureAwait( false );
     }
 }

@@ -1,10 +1,20 @@
-﻿<div class="flex px-4 pb-2 align-center">
-    <img src="images/1.jpg" class="mr-2 h-14 rounded shadow"/>
+﻿<div class="flex px-4 pb-2 align-center pt-4">
+    <img class ="mr-2 h-14 rounded shadow" src="images/1.jpg" />
     <div class="p-2">
         <div class="flex">
-            <h3 class="font-bold mr-2">Jay McCormick</h3>
+            <h3 class="font-bold mr-2">@UserName</h3>
             <span class="uppercase text-xs font-light mt-1">6:30 PM</span>
         </div>
         <p>Hello Buddha!</p>
     </div>
 </div>
+
+@code
+{
+    [Parameter]
+    public string Text { get; set; }
+    [Parameter]
+    public string UserName { get; set; }
+    [Parameter]
+    public string pictureURL { get; set; }
+}
