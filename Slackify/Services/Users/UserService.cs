@@ -2,11 +2,11 @@
 
 public class UserService : IUserService
 {
-    private readonly SlackifyDbContext _dbContext;
+    private readonly SlackifyDatabaseContext _databaseContext;
 
-    public UserService( SlackifyDbContext dbContext )
+    public UserService( SlackifyDatabaseContext databaseContext )
     {
-        this._dbContext = dbContext;
+        this._databaseContext = databaseContext;
     }
     public ValueTask<ICollection<User>> GetAllUsers()
     {
@@ -15,24 +15,24 @@ public class UserService : IUserService
 
     public async ValueTask<User> GetUserByEmail( string email )
     {
-        User userInDb = await this._dbContext.Users.Where( u => u.Email == email )
-                                                  .SingleOrDefaultAsync()
-                                                  .ConfigureAwait( false );
-        return userInDb;
+        User userInDatabase = await this._databaseContext.Users.Where( u => u.Email == email )
+                                                               .SingleOrDefaultAsync()
+                                                               .ConfigureAwait( false );
+        return userInDatabase;
     }
 
     public async ValueTask<User> GetUserById( int id )
     {
-        User userInDb = await this._dbContext.Users.Where( u => u.Id == id )
-                                                  .SingleOrDefaultAsync()
-                                                  .ConfigureAwait( false );
-        return userInDb;
+        User userInDatabase = await this._databaseContext.Users.Where( u => u.Id == id )
+                                                               .SingleOrDefaultAsync()
+                                                               .ConfigureAwait( false );
+        return userInDatabase;
     }
 
     public async ValueTask<User> RegisterUser( User user )
     {
-        _ = this._dbContext.Users.Add( user );
-        _ = await this._dbContext.SaveChangesAsync().ConfigureAwait( false );
+        this._databaseContext.Users.Add( user );
+        await this._databaseContext.SaveChangesAsync().ConfigureAwait( false );
 
         return user;
     }

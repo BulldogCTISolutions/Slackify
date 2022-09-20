@@ -1,14 +1,14 @@
 ﻿@page "/"
-@page "/client/{resourceParameter}"
+@page "/client/{ResourceParameter:string}"
 
 <AuthorizeView>
     <NotAuthorized>
         <Login />
     </NotAuthorized>
-    
+
     <Authorized>
         <CascadingValue Value="@ResourceParameter">
-            <NavMenu profileImageUrl="@context.User.Claims.Where(user => user.Type == "picture").FirstOrDefault().Value"/>
+            <NavMenu profileImageUrl="@context.User.Claims.Where(user => user.Type == "picture").FirstOrDefault().Value" />
             <div class="flex h-screen w-full">
                 <Sidebar></Sidebar>
                 <ChatContainer UserEmail="@context.User.Claims.Where(user => user.Type == ClaimTypes.Email).FirstOrDefault().Value" />
@@ -20,5 +20,5 @@
 @code
 {
     [Parameter]
-    public string ResourceParameter { get; set; }
+    public string ResourceParameter { get; set; } = string.Empty;
 }

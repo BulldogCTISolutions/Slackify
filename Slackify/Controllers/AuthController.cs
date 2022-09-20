@@ -19,29 +19,28 @@ public class AuthController : ControllerBase
     [HttpGet( "google-login" )]
     public async Task LoginAsync()
     {
-        await this.HttpContext.ChallengeAsync( GoogleDefaults.AuthenticationScheme,
-                                          new AuthenticationProperties()
-                                          {
-                                              RedirectUri = this.Url.Action( nameof( LoginCallBack ) )
-                                          } ).ConfigureAwait( false );
+        await this.HttpContext.ChallengeAsync( GoogleDefaults.AuthenticationScheme, new AuthenticationProperties()
+        {
+            RedirectUri = this.Url.Action( nameof( LoginCallBack ) )
+        } ).ConfigureAwait( false );
     }
 
     [HttpGet]
     public async Task<IActionResult> LoginCallBack()
     {
         AuthenticateResult result = await this.HttpContext.AuthenticateAsync( CookieAuthenticationDefaults.AuthenticationScheme )
-                                                     .ConfigureAwait( false );
+                                                          .ConfigureAwait( false );
 
         string email = result.Principal.FindFirst( ClaimTypes.Email ).Value;
 
-        User userInDb = await this._userService.GetUserByEmail( email ).ConfigureAwait( false );
+        User userInDatabase = await this._userService.GetUserByEmail( email ).ConfigureAwait( false );
 
-        if( userInDb is null )
+        if( userInDatabase is null )
         {
             await this.SaveUserDetails( result ).ConfigureAwait( false );
         }
 
-        return this.Redirect( "https://localhost:44374" );
+        return this.Redirect( "https://localhost:44374" );  //  TODO:  where?
     }
 
     [HttpGet( "signout" )]
@@ -59,7 +58,7 @@ public class AuthController : ControllerBase
         string userName = result.Principal.FindFirst( ClaimTypes.Name ).Value;
         string picture = this.User.Claims.FirstOrDefault( c => c.Type == "picture" ).Value;
 
-        User user = new()
+        User user = new User()
         {
             UserName = userName,
             Email = email,
@@ -67,6 +66,6 @@ public class AuthController : ControllerBase
             DateJoined = DateTime.Now
         };
 
-        _ = await this._userService.RegisterUser( user ).ConfigureAwait( false );
+        await this._userService.RegisterUser( user ).ConfigureAwait( false );
     }
 }

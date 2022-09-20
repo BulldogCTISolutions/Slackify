@@ -1,5 +1,4 @@
-﻿
-@inject NavigationManager NavigationManager;
+﻿@inject NavigationManager navigationManager;
 
 @implements IAsyncDisposable;
 
@@ -78,24 +77,24 @@
     {
         CookieContainer cookieContainer = new CookieContainer();
         Cookie cookie = new Cookie()
-            {
-                Name = "SlackifyAuthenticationCookie",
-                Domain = "localhost",
-                Value = cookiesProvider.Cookie
-            };
+        {
+            Name = "SlackifyAuthenticationCookie",
+            Domain = "localhost",
+            Value = cookiesProvider.Cookie
+        };
 
         cookieContainer.Add( cookie );
 
         if( cookiesProvider.Cookie == null )
         {
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl( NavigationManager.ToAbsoluteUri( "/chat" ) )
+                .WithUrl( navigationManager.ToAbsoluteUri( "/chat" ) )
                 .Build();
         }
         else
         {
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl( NavigationManager.ToAbsoluteUri( "/chat" ), option => option.Cookies = cookieContainer )
+                .WithUrl( navigationManager.ToAbsoluteUri( "/chat" ), option => option.Cookies = cookieContainer )
                 .Build();
         }
 

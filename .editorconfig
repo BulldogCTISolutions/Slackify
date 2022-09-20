@@ -1729,6 +1729,7 @@ csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimenta
 csharp_preserve_single_line_statements                                   = true
 csharp_preserve_single_line_blocks                                       = true
 csharp_style_prefer_utf8_string_literals = true:suggestion
+dotnet_diagnostic.IDE0090.severity = silent
 
 #[src/{VisualStudio}/**/*.{cs,vb}]
 # CA1822: Make member static

@@ -2,14 +2,14 @@
 
 public sealed class MessageService : IMessageService
 {
-    private readonly SlackifyDbContext _dbContext;
+    private readonly SlackifyDatabaseContext _databaseContext;
 
-    public MessageService( SlackifyDbContext dbContext )
+    public MessageService( SlackifyDatabaseContext databaseContext )
     {
-        this._dbContext = dbContext;
+        this._databaseContext = databaseContext;
     }
 
-    ValueTask<Message> IMessageService.RegisterMessage( Message user )
+    ValueTask<Message> IMessageService.RegisterMessage( Message message )
     {
         throw new NotImplementedException();
     }
@@ -21,54 +21,56 @@ public sealed class MessageService : IMessageService
 
     public async ValueTask<Message> GetMessageByEmail( string email )
     {
-        Message messageInDb = await this._dbContext.Messages.Where( m => m.Chat == email )
-                                                            .SingleOrDefaultAsync()
-                                                            .ConfigureAwait( false );
-        return messageInDb;
+        Message messageInDatabase = await this._databaseContext.Messages.Where( m => m.Chat == email )
+                                                                        .SingleOrDefaultAsync()
+                                                                        .ConfigureAwait( false );
+        return messageInDatabase;
     }
 
     public async ValueTask<Message> GetMessageById( int id )
     {
-        Message messageInDb = await this._dbContext.Messages.Where( m => m.Id == id )
-                                                            .SingleOrDefaultAsync()
-                                                            .ConfigureAwait( false );
-        return messageInDb;
+        Message messageInDatabase = await this._databaseContext.Messages.Where( m => m.Id == id )
+                                                                        .SingleOrDefaultAsync()
+                                                                        .ConfigureAwait( false );
+        return messageInDatabase;
     }
 
     public async ValueTask<Message> RegisterMessage( Message message )
     {
-        _ = this._dbContext.Messages.Add( message );
-        _ = await this._dbContext.SaveChangesAsync().ConfigureAwait( false );
+        this._databaseContext.Messages.Add( message );
+        await this._databaseContext.SaveChangesAsync().ConfigureAwait( false );
 
         return message;
     }
 
     async ValueTask<int> IMessageService.SaveMessage( Message chatMessage )
     {
-        _ = this._dbContext.Messages.Add( chatMessage );
-        return await this._dbContext.SaveChangesAsync().ConfigureAwait( false );
+        this._databaseContext.Messages.Add( chatMessage );
+        return await this._databaseContext.SaveChangesAsync().ConfigureAwait( false );
     }
 
     public async ValueTask<ICollection<Message>> GetConversations( int fromId, int toId )
     {
-        return await this._dbContext.Messages
-                                    .Where( message => ( message.FromUserId == fromId && message.ToUserId == toId ) || ( message.FromUserId == toId && message.ToUserId == fromId ) )
-                                    .Include( message => message.FromUser )
-                                    .OrderByDescending( message => message.CreatedDate )
-                                    .AsNoTracking()
-                                    .ToListAsync()
-                                    .ConfigureAwait( false );
+        return await this._databaseContext.Messages
+                                          .Where( message => ( message.FromUserId == fromId && message.ToUserId == toId ) ||
+                                                                            ( message.FromUserId == toId && message.ToUserId == fromId ) )
+                                          .Include( message => message.FromUser )
+                                          .OrderByDescending( message => message.CreatedDate )
+                                          .AsNoTracking()
+                                          .ToListAsync()
+                                          .ConfigureAwait( false );
     }
 
     async ValueTask<ICollection<Message>> IMessageService.GetRecentConversations( int id )
     {
-        return await this._dbContext.Messages
-                                    .Where( message => message.FromUserId == id || message.ToUserId == id )
-                                    .Include( message => message.FromUser )
-                                    .OrderByDescending( message => message.CreatedDate )
-                                    .Take( 20 )
-                                    .AsNoTracking()
-                                    .ToListAsync()
-                                    .ConfigureAwait( false );
+        return await this._databaseContext.Messages
+                                         .Where( message => ( message.FromUserId == id ) ||
+                                                                           ( message.ToUserId == id ) )
+                                         .Include( message => message.FromUser )
+                                         .OrderByDescending( message => message.CreatedDate )
+                                         .Take( 20 )
+                                         .AsNoTracking()
+                                         .ToListAsync()
+                                         .ConfigureAwait( false );
     }
 }

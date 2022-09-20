@@ -1,10 +1,10 @@
 ﻿namespace Slackify.Installers;
 
-public class DbInstaller : IInstaller
+public class DatabaseInstaller : IInstaller
 {
     public void InstallService( IServiceCollection services, IConfiguration configuration )
     {
-        _ = services.AddDbContext<SlackifyDbContext>( option =>
+        services.AddDbContext<SlackifyDatabaseContext>( option =>
                 option.UseSqlServer( configuration.GetConnectionString( "DefaultConnection" ) ) );
     }
 }

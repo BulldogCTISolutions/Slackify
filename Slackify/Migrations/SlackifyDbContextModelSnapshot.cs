@@ -10,7 +10,7 @@ using Slackify.Data;
 
 namespace Slackify.Migrations
 {
-    [DbContext(typeof(SlackifyDbContext))]
+    [DbContext(typeof(SlackifyDatabaseContext))]
     partial class SlackifyDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

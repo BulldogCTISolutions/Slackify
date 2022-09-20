@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Slackify.Models;
 
+[Table( "Slackify_Users" )]
 public record User
 {
     public User()

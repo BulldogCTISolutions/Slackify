@@ -11,7 +11,7 @@ using Slackify.Data;
 
 namespace Slackify.Migrations
 {
-    [DbContext(typeof(SlackifyDbContext))]
+    [DbContext(typeof(SlackifyDatabaseContext))]
     [Migration("20220719201853_initialmigration_dbsetup")]
     partial class InitialMigrationDatabaseSetup
     {

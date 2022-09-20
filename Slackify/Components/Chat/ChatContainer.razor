@@ -35,20 +35,21 @@
 
 @code
 {
-    private HubConnection _hubConnection;
-    private List<MessagePack> _userMessages = new();
-
     [CascadingParameter]
     public string ResourceParameter { get; set; }
+
     [Parameter]
     public string UserEmail { get; set; }
 
-    public bool IsLoading { get; set; } = false;
-    public string PreviousResourceParameter { get; set; } = string.Empty;
-    public string ChatHeaderTitle { get; set; } = "Slackifying with Blazor, Tailwindcss, and SignalR";
-
     [Inject]
     public CookiesProvider cookiesProvider { get; set; }
+
+    public bool IsLoading { get; set; } = false;
+    public string PreviousResourceParameter { get; set; }
+    public string ChatHeaderTitle { get; set; } = "Slackifying with Blazor, Tailwindcss, and SignalR";
+
+    private HubConnection _hubConnection;
+    private List<MessagePack> _userMessages = new List<MessagePack>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,7 +88,8 @@
 
     protected override async Task OnAfterRenderAsync( bool firstRender )
     {
-        if( this.ResourceParameter == this.PreviousResourceParameter )
+        if( ( string.IsNullOrEmpty( this.ResourceParameter ) == true ) ||
+            ( this.ResourceParameter == this.PreviousResourceParameter ) )
         {
             return;
         }
@@ -118,12 +120,13 @@
         {
             case "DM":
                 {
-                //
+                    this.ChatHeaderTitle = resourceName.ToLower();
+                    await InvokeAsync( () => StateHasChanged() ).ConfigureAwait( false );
                 }
                 break;
             case "CH":
                 {
-                //
+                    //
                 }
                 break;
             default:

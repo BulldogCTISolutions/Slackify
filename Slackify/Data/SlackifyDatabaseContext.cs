@@ -1,8 +1,8 @@
 ﻿namespace Slackify.Data;
 
-public class SlackifyDbContext : DbContext
+public class SlackifyDatabaseContext : DbContext
 {
-    public SlackifyDbContext( DbContextOptions options )
+    public SlackifyDatabaseContext( DbContextOptions options )
         : base( options )
     {
     }
@@ -19,14 +19,14 @@ public class SlackifyDbContext : DbContext
         }
         base.OnModelCreating( modelBuilder );
 
-        _ = modelBuilder.Entity<Message>( entity =>
+        modelBuilder.Entity<Message>( entity =>
         {
-            _ = entity.HasOne( message => message.FromUser )
+            entity.HasOne( message => message.FromUser )
                   .WithMany( message => message.ChatMessagesFromUsers )
                   .HasForeignKey( message => message.FromUserId )
                   .OnDelete( DeleteBehavior.ClientSetNull );
 
-            _ = entity.HasOne( message => message.ToUser )
+            entity.HasOne( message => message.ToUser )
                   .WithMany( message => message.ChatMessagesToUsers )
                   .HasForeignKey( message => message.ToUserId )
                   .OnDelete( DeleteBehavior.ClientSetNull );

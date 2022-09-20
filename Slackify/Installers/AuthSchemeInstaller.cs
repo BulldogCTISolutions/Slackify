@@ -8,7 +8,7 @@ public class AuthSchemeInstaller : IInstaller
     public void InstallService( IServiceCollection services, IConfiguration configuration )
     {
         //  Add Google OAuth
-        _ = services.AddAuthentication( authenticationOptions =>
+        services.AddAuthentication( authenticationOptions =>
         {
             authenticationOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             authenticationOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;

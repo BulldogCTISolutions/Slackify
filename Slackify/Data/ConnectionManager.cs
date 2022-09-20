@@ -2,7 +2,7 @@
 
 public class ConnectionManager
 {
-    private readonly Dictionary<string, HashSet<string>> _connections = new();
+    private readonly Dictionary<string, HashSet<string>> _connections = new Dictionary<string, HashSet<string>>();
 
     public int Count => this._connections.Count;
 
@@ -18,7 +18,7 @@ public class ConnectionManager
 
             lock( connection )
             {
-                _ = connection.Add( connectionId );
+                connection.Add( connectionId );
             }
         }
     }
@@ -50,10 +50,10 @@ public class ConnectionManager
 
             lock( connection )
             {
-                _ = connection.Remove( connectionId );
+                connection.Remove( connectionId );
                 if( connection.Count == 0 )
                 {
-                    _ = this._connections.Remove( key );
+                    this._connections.Remove( key );
                 }
             }
         }

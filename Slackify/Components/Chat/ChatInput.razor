@@ -4,11 +4,11 @@
 
 @implements IAsyncDisposable;
 
-<div UserEmail="@UserEmail">
+<div userEmail="@UserEmail">
     <EditForm Model="_chatMessage" OnValidSubmit="OnSubmit" class="relative flex justify-center">
         <input type="text" class="fixed p-2 text-base w-[60%] outline-none border border-gray-800 rounded bottom-7"
                placeholder="Message #blazor-engineering" @ref="_elementReference" @bind="_messageInput" />
-        <button type="submit" onclick="Send" class="hidden">Send</button>
+        <button @onclick="Send" type="submit" class="hidden">Send</button>
     </EditForm>
 </div>
 
@@ -17,16 +17,16 @@
     [CascadingParameter]
     public string ResourceParameter { get; set; }
 
-    [Inject]
-    public CookiesProvider CookiesProvider { get; set; }
-
     [Parameter]
     public string UserEmail { get; set; }
 
+    [Inject]
+    public CookiesProvider CookiesProvider { get; set; }
+
+    private string _messageInput;
     private ElementReference _elementReference;
     private HubConnection _hubConnection;
-    private string _messageInput;
-    private ChatMessage _chatMessage = new();
+    private ChatMessage _chatMessage = new ChatMessage();
 
     protected override void OnAfterRender( bool firstRender )
     {
@@ -93,7 +93,9 @@
         await this.messageService.SaveMessage( new Message
             {
                 FromUserId = senderUser.Id,
+                FromUser = senderUser,
                 ToUserId = receiverUser.Id,
+                ToUser = receiverUser,
                 Chat = _messageInput,
                 CreatedDate = DateTime.Now
             } );

@@ -66,6 +66,48 @@ public class ChatHub : Hub
         await base.OnDisconnectedAsync( exception ).ConfigureAwait( false );
     }
 
+    public async Task SendMessageAsync( string receiverEmail, string chatMessage )
+    {
+        string userEmail = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email ).Value;
+        string userName = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Name ).Value;
+        string userPicture = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == "picture" ).Value;
+
+        User messageSender = await this._userService.GetUserByEmail( userEmail ).ConfigureAwait( false );
+        string senderKey = $"{userEmail}-{userName}-{messageSender.Id}";
+        User messageReceiver = await this._userService.GetUserByEmail( receiverEmail ).ConfigureAwait( false );
+        string receiverKey = $"{messageReceiver.Email}-{messageReceiver.UserName}-{messageReceiver.Id}";
+
+        Models.MessagePack messagePack = new Models.MessagePack()
+        {
+            UserName = userName,
+            Message = chatMessage,
+            Picture = userPicture,
+            CreatedAt = DateTime.Now
+        };
+
+        IEnumerable<string> receiverConnectionIds = this._connectionManager.GetConnections( receiverKey );
+        IEnumerable<string> senderConnectionIds = this._connectionManager.GetConnections( senderKey );
+
+        if( receiverKey == senderKey )
+        {
+            foreach( string connectionId in receiverConnectionIds )
+            {
+                await this.Clients.Client( connectionId ).SendAsync( "ReceivePrivateMessage", messagePack ).ConfigureAwait( false );
+            }
+        }
+        else
+        {
+            foreach( string connectionId in receiverConnectionIds )
+            {
+                await this.Clients.Client( connectionId ).SendAsync( "ReceivePrivateMessage", messagePack ).ConfigureAwait( false );
+            }
+            foreach( string connectionId in senderConnectionIds )
+            {
+                await this.Clients.Client( connectionId ).SendAsync( "ReceivePrivateMessage", messagePack ).ConfigureAwait( false );
+            }
+        }
+    }
+
     private string GetConnectionId()
     {
         return this.Context.ConnectionId;
