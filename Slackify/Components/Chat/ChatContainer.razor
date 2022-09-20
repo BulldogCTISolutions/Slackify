@@ -109,7 +109,7 @@
 
         messages = await this.messageService.GetConversations( sender.Id, resourceId );
 
-        messagePacks = await this.mapper.Map<ICollection<Message>, ICollection<MessagePack>>( messages );
+        messagePacks = this.mapper.Map<ICollection<Message>, ICollection<MessagePack>>( messages );
 
         this._userMessages = messagePacks.ToList();
         this.IsLoading = false;

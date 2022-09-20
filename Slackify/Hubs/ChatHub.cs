@@ -18,7 +18,7 @@ public class ChatHub : Hub
         await this.Clients.All.SendAsync( "ReceiveInitializeUsersList", list ).ConfigureAwait( false );
     }
 
-    public void AddUserToRoom( string userEmail )
+    public void AddUserToRoom( /*string userEmail*/ )
     {
         string currentUser = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email ).Value;
 
