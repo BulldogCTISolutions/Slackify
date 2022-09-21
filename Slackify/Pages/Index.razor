@@ -8,10 +8,10 @@
 
     <Authorized>
         <CascadingValue Value="@ResourceParameter">
-            <NavMenu profileImageUrl="@context.User.Claims.Where(user => user.Type == "picture").FirstOrDefault().Value" />
+            <NavMenu profileImageUrl="@context.User.Claims.FirstOrDefault(user => user.Type == "picture").Value" />
             <div class="flex h-screen w-full">
                 <Sidebar></Sidebar>
-                <ChatContainer UserEmail="@context.User.Claims.Where(user => user.Type == ClaimTypes.Email).FirstOrDefault().Value" />
+                <ChatContainer UserEmail="@context.User.Claims.FirstOrDefault(user => user.Type == ClaimTypes.Email).Value" />
             </div>
         </CascadingValue>
     </Authorized>

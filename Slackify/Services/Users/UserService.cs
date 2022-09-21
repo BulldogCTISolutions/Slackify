@@ -15,16 +15,14 @@ public class UserService : IUserService
 
     public async ValueTask<User> GetUserByEmail( string email )
     {
-        User userInDatabase = await this._databaseContext.Users.Where( u => u.Email == email )
-                                                               .SingleOrDefaultAsync()
+        User userInDatabase = await this._databaseContext.Users.SingleOrDefaultAsync( u => u.Email == email )
                                                                .ConfigureAwait( false );
         return userInDatabase;
     }
 
     public async ValueTask<User> GetUserById( int id )
     {
-        User userInDatabase = await this._databaseContext.Users.Where( u => u.Id == id )
-                                                               .SingleOrDefaultAsync()
+        User userInDatabase = await this._databaseContext.Users.SingleOrDefaultAsync( u => u.Id == id )
                                                                .ConfigureAwait( false );
         return userInDatabase;
     }

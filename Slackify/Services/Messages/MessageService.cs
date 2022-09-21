@@ -21,16 +21,14 @@ public sealed class MessageService : IMessageService
 
     public async ValueTask<Message> GetMessageByEmail( string email )
     {
-        Message messageInDatabase = await this._databaseContext.Messages.Where( m => m.Chat == email )
-                                                                        .SingleOrDefaultAsync()
+        Message messageInDatabase = await this._databaseContext.Messages.SingleOrDefaultAsync( m => m.Chat == email )
                                                                         .ConfigureAwait( false );
         return messageInDatabase;
     }
 
     public async ValueTask<Message> GetMessageById( int id )
     {
-        Message messageInDatabase = await this._databaseContext.Messages.Where( m => m.Id == id )
-                                                                        .SingleOrDefaultAsync()
+        Message messageInDatabase = await this._databaseContext.Messages.SingleOrDefaultAsync( m => m.Id == id )
                                                                         .ConfigureAwait( false );
         return messageInDatabase;
     }

@@ -123,7 +123,7 @@
 
         _hubConnection.On<string>( "UserDisconnected", email =>
         {
-            var user = this._previousChatUserList.Where( user => user.Email == email ).SingleOrDefault();
+            var user = this._previousChatUserList.SingleOrDefault( user => user.Email == email );// TODO:  string.compare
 
             this._previousChatUserList.Remove( user );
 
