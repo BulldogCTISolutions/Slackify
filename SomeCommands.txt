@@ -1,4 +1,8 @@
 ﻿
+//  To update Tailwindcss
+
+npm install -D tailwindcss@latest
+
 //  To keep Tailwindcss always generating utility classes.
 //	Must be in project folder, not solution folder.
 //	Adding --watch on the end keeps the process always running.
@@ -19,3 +23,5 @@ dotnet user-secrets list
 //	Entity Framework commands from the 'package manager console'
 add-migration "InitialMigrationDatabaseSetup"
 update-database
+
+//  If you want to delete the database and start over.  Delete the files in the Migration folder and rerun the above commands.
