@@ -10,7 +10,7 @@ public class ConnectionManager
     {
         lock( this._connections )
         {
-            if( this._connections.TryGetValue( key, out HashSet<string> connection ) == false )
+            if( this._connections.TryGetValue( key, out HashSet<string>? connection ) == false )
             {
                 connection = new HashSet<string>();
                 this._connections.Add( key, connection );
@@ -30,20 +30,20 @@ public class ConnectionManager
 
     public string GetConnection( string key )
     {
-        HashSet<string> connection = this._connections[key];
-        return connection == null ? string.Empty : connection.FirstOrDefault();
+        HashSet<string>? connection = this._connections[key];
+        return connection is null ? string.Empty : connection.FirstOrDefault( string.Empty );
     }
 
     public IEnumerable<string> GetConnections( string key )
     {
-        return this._connections.TryGetValue( key, out HashSet<string> connections ) == false ? Enumerable.Empty<string>() : connections;
+        return this._connections.TryGetValue( key, out HashSet<string>? connections ) == false ? Enumerable.Empty<string>() : connections;
     }
 
     public void Remove( string key, string connectionId )
     {
         lock( this._connections )
         {
-            if( this._connections.TryGetValue( key, out HashSet<string> connection ) == false )
+            if( this._connections.TryGetValue( key, out HashSet<string>? connection ) == false )
             {
                 return;
             }

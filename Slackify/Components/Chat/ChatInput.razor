@@ -15,22 +15,22 @@
 @code
 {
     [CascadingParameter]
-    public string ResourceParameter { get; set; }
+    public string ResourceParameter { get; set; } = string.Empty;
 
     [Parameter]
-    public string UserEmail { get; set; }
+    public string UserEmail { get; set; } = string.Empty;
 
     [Inject]
-    public CookiesProvider CookiesProvider { get; set; }
+    public CookiesProvider? CookiesProvider { get; set; }
 
-    private string _messageInput;
-    private ElementReference _elementReference;
-    private HubConnection _hubConnection;
-    private ChatMessage _chatMessage = new ChatMessage();
+    private string _messageInput = string.Empty;
+    private ElementReference? _elementReference;
+    private HubConnection? _hubConnection;
+    private ChatMessage? _chatMessage = new ChatMessage();
 
     protected override void OnAfterRender( bool firstRender )
     {
-        _elementReference.FocusAsync();
+        _elementReference?.FocusAsync();
     }
 
     public async Task OnSubmit()
@@ -46,12 +46,12 @@
             {
                 Name = "SlackifyAuthenticationCookie",
                 Domain = "localhost",
-                Value = CookiesProvider.Cookie
+                Value = CookiesProvider?.Cookie
             };
 
         cookieContainer.Add( cookie );
 
-        if( CookiesProvider.Cookie == null )
+        if( string.IsNullOrEmpty( CookiesProvider?.Cookie ) == false )
         {
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl( navigationManager.ToAbsoluteUri( "/chat" ) )
@@ -84,21 +84,24 @@
         string resourceName = resourceArray[3];
 
         //  Send the message through the SignalR Chat Hub.
-        await _hubConnection.SendAsync( "SendMessage", resourceId, _messageInput );
+        if( this._hubConnection is not null )
+        {
+            await this._hubConnection.SendAsync( "SendMessage", resourceId, _messageInput );
 
-        //  Save the message in our database.
-        User receiverUser = await this.userService.GetUserByEmail( resourceEmail );
-        User senderUser = await this.userService.GetUserByEmail( this.UserEmail );
+            //  Save the message in our database.
+            User receiverUser = await this.userService.GetUserByEmail( resourceEmail );
+            User senderUser = await this.userService.GetUserByEmail( this.UserEmail );
 
-        await this.messageService.SaveMessage( new Message
-            {
-                FromUserId = senderUser.Id,
-                FromUser = senderUser,
-                ToUserId = receiverUser.Id,
-                ToUser = receiverUser,
-                Chat = _messageInput,
-                CreatedDate = DateTime.Now
-            } );
+            await this.messageService.SaveMessage( new Message
+                {
+                    FromUserId = senderUser.Id,
+                    FromUser = senderUser,
+                    ToUserId = receiverUser.Id,
+                    ToUser = receiverUser,
+                    Chat = _messageInput,
+                    CreatedDate = DateTime.Now
+                } );
+        }
     }
 
     public async ValueTask DisposeAsync()

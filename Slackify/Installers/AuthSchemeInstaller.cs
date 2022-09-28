@@ -28,8 +28,11 @@ public class AuthSchemeInstaller : IInstaller
                 googleOptions.Events.OnCreatingTicket = context =>
                 {
                     //  TODO: Handle null references.
-                    string pictureUri = context.User.GetProperty( "picture" ).GetString();
-                    context.Identity.AddClaim( new Claim( "picture", pictureUri ) );
+                    string? pictureUri = context.User.GetProperty( "picture" ).GetString();
+                    if( string.IsNullOrEmpty( pictureUri ) == false )
+                    {
+                        context.Identity?.AddClaim( new Claim( "picture", pictureUri ) );
+                    }
                     return Task.CompletedTask;
                 };
             } );

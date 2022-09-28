@@ -21,16 +21,20 @@ public sealed class MessageService : IMessageService
 
     public async ValueTask<Message> GetMessageByEmail( string email )
     {
-        Message messageInDatabase = await this._databaseContext.Messages.SingleOrDefaultAsync( m => m.Chat == email )
-                                                                        .ConfigureAwait( false );
+        Message? messageInDatabase = await this._databaseContext.Messages.SingleOrDefaultAsync( m => m.Chat == email )
+                                                                         .ConfigureAwait( false );
+#pragma warning disable CS8603 // Possible null reference return.
         return messageInDatabase;
+#pragma warning restore CS8603 // Possible null reference return.
     }
 
     public async ValueTask<Message> GetMessageById( int id )
     {
-        Message messageInDatabase = await this._databaseContext.Messages.SingleOrDefaultAsync( m => m.Id == id )
-                                                                        .ConfigureAwait( false );
+        Message? messageInDatabase = await this._databaseContext.Messages.SingleOrDefaultAsync( m => m.Id == id )
+                                                                         .ConfigureAwait( false );
+#pragma warning disable CS8603 // Possible null reference return.
         return messageInDatabase;
+#pragma warning restore CS8603 // Possible null reference return.
     }
 
     public async ValueTask<Message> RegisterMessage( Message message )

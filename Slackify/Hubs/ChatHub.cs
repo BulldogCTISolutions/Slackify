@@ -20,23 +20,30 @@ public class ChatHub : Hub
 
     public void AddUserToRoom( /*string userEmail*/ )
     {
-        string currentUser = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email ).Value;
+        string? currentUser = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email )?.Value;
 
-        string connectionId = this.GetConnectionId();
-        this._connectionManager.Add( currentUser, connectionId );
+        if( string.IsNullOrEmpty( currentUser ) == false )
+        {
+            string connectionId = this.GetConnectionId();
+            this._connectionManager.Add( currentUser, connectionId );
+        }
     }
 
     public override async Task OnConnectedAsync()
     {
         try
         {
-            string userEmail = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email ).Value;
-            string userName = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Name ).Value;
-            User userInDatabase = await this._userService.GetUserByEmail( userEmail ).ConfigureAwait( false );
+            string? userEmail = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email )?.Value;
+            string? userName = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Name )?.Value;
 
-            string key = $"{userEmail}-{userName}-{userInDatabase.Id}";
+            if( string.IsNullOrEmpty( userEmail ) == false )
+            {
+                User userInDatabase = await this._userService.GetUserByEmail( userEmail ).ConfigureAwait( false );
 
-            this._connectionManager.Add( key, this.GetConnectionId() );
+                string key = $"{userEmail}-{userName}-{userInDatabase.Id}";
+
+                this._connectionManager.Add( key, this.GetConnectionId() );
+            }
         }
         catch( NullReferenceException )
         {
@@ -45,19 +52,23 @@ public class ChatHub : Hub
         await base.OnConnectedAsync().ConfigureAwait( false );
     }
 
-    public override async Task OnDisconnectedAsync( Exception exception )
+    public override async Task OnDisconnectedAsync( Exception? exception )
     {
         try
         {
-            string userEmail = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email ).Value;
-            string userName = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Name ).Value;
-            User userInDatabase = await this._userService.GetUserByEmail( userEmail ).ConfigureAwait( false );
+            string? userEmail = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email )?.Value;
+            string? userName = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Name )?.Value;
 
-            string key = $"{userEmail}-{userName}-{userInDatabase.Id}";
+            if( string.IsNullOrEmpty( userEmail ) == false )
+            {
+                User userInDatabase = await this._userService.GetUserByEmail( userEmail ).ConfigureAwait( false );
 
-            this._connectionManager.Remove( key, this.GetConnectionId() );
+                string key = $"{userEmail}-{userName}-{userInDatabase.Id}";
 
-            await this.Clients.All.SendAsync( "UserDisconnected", userEmail ).ConfigureAwait( false );
+                this._connectionManager.Remove( key, this.GetConnectionId() );
+
+                await this.Clients.All.SendAsync( "UserDisconnected", userEmail ).ConfigureAwait( false );
+            }
         }
         catch( NullReferenceException )
         {
@@ -68,42 +79,46 @@ public class ChatHub : Hub
 
     public async Task SendMessageAsync( string receiverEmail, string chatMessage )
     {
-        string userEmail = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email ).Value;
-        string userName = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Name ).Value;
-        string userPicture = this.Context.User.Claims.FirstOrDefault( claim => claim.Type == "picture" ).Value;
+        string? userEmail = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email )?.Value;
+        string? userName = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Name )?.Value;
+        string? userPicture = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == "picture" )?.Value;
 
-        User messageSender = await this._userService.GetUserByEmail( userEmail ).ConfigureAwait( false );
-        string senderKey = $"{userEmail}-{userName}-{messageSender.Id}";
-        User messageReceiver = await this._userService.GetUserByEmail( receiverEmail ).ConfigureAwait( false );
-        string receiverKey = $"{messageReceiver.Email}-{messageReceiver.UserName}-{messageReceiver.Id}";
-
-        Models.MessagePack messagePack = new Models.MessagePack()
+        if( ( string.IsNullOrEmpty( userEmail ) == false ) &&
+            ( string.IsNullOrEmpty( userName ) == false ) )
         {
-            UserName = userName,
-            Message = chatMessage,
-            Picture = userPicture,
-            CreatedAt = DateTime.Now
-        };
+            User messageSender = await this._userService.GetUserByEmail( userEmail ).ConfigureAwait( false );
+            string senderKey = $"{userEmail}-{userName}-{messageSender.Id}";
+            User messageReceiver = await this._userService.GetUserByEmail( receiverEmail ).ConfigureAwait( false );
+            string receiverKey = $"{messageReceiver.Email}-{messageReceiver.UserName}-{messageReceiver.Id}";
 
-        IEnumerable<string> receiverConnectionIds = this._connectionManager.GetConnections( receiverKey );
-        IEnumerable<string> senderConnectionIds = this._connectionManager.GetConnections( senderKey );
-
-        if( receiverKey == senderKey )
-        {
-            foreach( string connectionId in receiverConnectionIds )
+            Models.MessagePack messagePack = new Models.MessagePack()
             {
-                await this.Clients.Client( connectionId ).SendAsync( "ReceivePrivateMessage", messagePack ).ConfigureAwait( false );
+                UserName = userName,
+                Message = chatMessage,
+                Picture = ( userPicture is null ) ? string.Empty : userPicture,
+                CreatedAt = DateTime.Now
+            };
+
+            IEnumerable<string> receiverConnectionIds = this._connectionManager.GetConnections( receiverKey );
+            IEnumerable<string> senderConnectionIds = this._connectionManager.GetConnections( senderKey );
+
+            if( receiverKey == senderKey )
+            {
+                foreach( string connectionId in receiverConnectionIds )
+                {
+                    await this.Clients.Client( connectionId ).SendAsync( "ReceivePrivateMessage", messagePack ).ConfigureAwait( false );
+                }
             }
-        }
-        else
-        {
-            foreach( string connectionId in receiverConnectionIds )
+            else
             {
-                await this.Clients.Client( connectionId ).SendAsync( "ReceivePrivateMessage", messagePack ).ConfigureAwait( false );
-            }
-            foreach( string connectionId in senderConnectionIds )
-            {
-                await this.Clients.Client( connectionId ).SendAsync( "ReceivePrivateMessage", messagePack ).ConfigureAwait( false );
+                foreach( string connectionId in receiverConnectionIds )
+                {
+                    await this.Clients.Client( connectionId ).SendAsync( "ReceivePrivateMessage", messagePack ).ConfigureAwait( false );
+                }
+                foreach( string connectionId in senderConnectionIds )
+                {
+                    await this.Clients.Client( connectionId ).SendAsync( "ReceivePrivateMessage", messagePack ).ConfigureAwait( false );
+                }
             }
         }
     }

@@ -36,19 +36,19 @@
 @code
 {
     [CascadingParameter]
-    public string ResourceParameter { get; set; }
+    public string ResourceParameter { get; set; } = string.Empty;
 
     [Parameter]
-    public string UserEmail { get; set; }
+    public string UserEmail { get; set; } = string.Empty;
 
     [Inject]
-    public CookiesProvider cookiesProvider { get; set; }
+    public CookiesProvider? cookiesProvider { get; set; }
 
     public bool IsLoading { get; set; } = false;
-    public string PreviousResourceParameter { get; set; }
+    public string PreviousResourceParameter { get; set; } = string.Empty;
     public string ChatHeaderTitle { get; set; } = "Slackifying with Blazor, Tailwindcss, and SignalR";
 
-    private HubConnection _hubConnection;
+    private HubConnection? _hubConnection;
     private List<MessagePack> _userMessages = new List<MessagePack>();
 
     protected override async Task OnInitializedAsync()
@@ -58,32 +58,32 @@
             {
                 Name = "SlackifyAuthenticationCookie",
                 Domain = "localhost",
-                Value = cookiesProvider.Cookie
+                Value = cookiesProvider?.Cookie
             };
 
         cookieContainer.Add( cookie );
 
-        if( cookiesProvider.Cookie == null )
+        if( string.IsNullOrEmpty( cookiesProvider?.Cookie ) == false )
         {
-            _hubConnection = new HubConnectionBuilder()
+            this._hubConnection = new HubConnectionBuilder()
                 .WithUrl( NavigationManager.ToAbsoluteUri( "/chat" ) )
                 .Build();
         }
         else
         {
-            _hubConnection = new HubConnectionBuilder()
+            this._hubConnection = new HubConnectionBuilder()
                 .WithUrl( NavigationManager.ToAbsoluteUri( "/chat" ), option => option.Cookies = cookieContainer )
                 .Build();
         }
 
-        _hubConnection.On<MessagePack>( "ReceivePrivateMessage", messagePack =>
+        this._hubConnection.On<MessagePack>( "ReceivePrivateMessage", messagePack =>
         {
             this._userMessages.Add( messagePack );
             this._userMessages = this._userMessages.OrderByDescending( message => message.CreatedAt ).ToList();
             InvokeAsync( () => StateHasChanged() );
         } );
 
-        await _hubConnection.StartAsync();
+        await this._hubConnection.StartAsync();
     }
 
     protected override async Task OnAfterRenderAsync( bool firstRender )

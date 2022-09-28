@@ -13,7 +13,7 @@
     
         <div class="flex w-full">
             <span class="bg-green-700 e-[5px] h-[5px] p-1 mt-2.5 mr-1 rounded-full"></span>
-            <p class="text-white">@context.User.Claims.SingleOrDefault(c => c.Type == ClaimTypes.Name).Value</p>
+            <p class="text-white">@context.User?.Claims.SingleOrDefault(c => c.Type == ClaimTypes.Name)?.Value</p>
         </div>
     </div>
 </AuthorizeView>

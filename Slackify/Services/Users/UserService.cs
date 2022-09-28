@@ -15,16 +15,20 @@ public class UserService : IUserService
 
     public async ValueTask<User> GetUserByEmail( string email )
     {
-        User userInDatabase = await this._databaseContext.Users.SingleOrDefaultAsync( u => u.Email == email )
-                                                               .ConfigureAwait( false );
-        return userInDatabase;
+        User? userInDatabase = await this._databaseContext.Users.SingleOrDefaultAsync( u => u.Email == email )
+                                                                .ConfigureAwait( false );
+#pragma warning disable CS8603 // Possible null reference return.
+        return userInDatabase; // Null handled by caller.
+#pragma warning restore CS8603 // Possible null reference return.
     }
 
     public async ValueTask<User> GetUserById( int id )
     {
-        User userInDatabase = await this._databaseContext.Users.SingleOrDefaultAsync( u => u.Id == id )
-                                                               .ConfigureAwait( false );
-        return userInDatabase;
+        User? userInDatabase = await this._databaseContext.Users.SingleOrDefaultAsync( u => u.Id == id )
+                                                                .ConfigureAwait( false );
+#pragma warning disable CS8603 // Possible null reference return.
+        return userInDatabase; // Null handled by caller
+#pragma warning restore CS8603 // Possible null reference return.
     }
 
     public async ValueTask<User> RegisterUser( User user )

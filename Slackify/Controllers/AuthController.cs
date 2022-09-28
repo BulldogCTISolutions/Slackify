@@ -31,11 +31,9 @@ public class AuthController : ControllerBase
         AuthenticateResult result = await this.HttpContext.AuthenticateAsync( CookieAuthenticationDefaults.AuthenticationScheme )
                                                           .ConfigureAwait( false );
 
-        string email = result.Principal.FindFirst( ClaimTypes.Email ).Value;
+        string? email = result.Principal?.FindFirst( ClaimTypes.Email )?.Value;
 
-        User userInDatabase = await this._userService.GetUserByEmail( email ).ConfigureAwait( false );
-
-        if( userInDatabase is null )
+        if( string.IsNullOrEmpty( email ) == false )
         {
             await this.SaveUserDetails( result ).ConfigureAwait( false );
         }
@@ -54,18 +52,23 @@ public class AuthController : ControllerBase
     //  might need to pass httpContext to service.
     private async Task SaveUserDetails( AuthenticateResult result )
     {
-        string email = result.Principal.FindFirst( ClaimTypes.Email ).Value;
-        string userName = result.Principal.FindFirst( ClaimTypes.Name ).Value;
-        string picture = this.User.Claims.FirstOrDefault( c => c.Type == "picture" ).Value;
+        string? email = result.Principal?.FindFirst( ClaimTypes.Email )?.Value;
+        string? userName = result.Principal?.FindFirst( ClaimTypes.Name )?.Value;
+        string? picture = this.User?.Claims.FirstOrDefault( c => c.Type == "picture" )?.Value;
 
-        User user = new User()
+        if( ( string.IsNullOrEmpty( email ) == false ) &&
+            ( string.IsNullOrEmpty( userName ) == false ) &&
+            ( string.IsNullOrEmpty( picture ) == false ) )
         {
-            UserName = userName,
-            Email = email,
-            Picture = picture,
-            DateJoined = DateTime.Now
-        };
+            User user = new User()
+            {
+                UserName = userName,
+                Email = email,
+                Picture = picture,
+                DateJoined = DateTime.Now
+            };
 
-        await this._userService.RegisterUser( user ).ConfigureAwait( false );
+            await this._userService.RegisterUser( user ).ConfigureAwait( false );
+        }
     }
 }
