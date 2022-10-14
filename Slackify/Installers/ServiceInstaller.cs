@@ -17,6 +17,7 @@ public class ServiceInstaller : IInstaller
         services.AddRazorPages();
         services.AddServerSideBlazor();
         services.AddSingleton<ConnectionManager>();
+        services.AddSingleton<IPublicClientApplicationWrapper, PublicClientApplicationWrapper>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IMessageService, MessageService>();
     }

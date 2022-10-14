@@ -1,4 +1,5 @@
-﻿WebApplicationBuilder builder = WebApplication.CreateBuilder( args );
+﻿
+WebApplicationBuilder builder = WebApplication.CreateBuilder( args );
 
 //  Add keys and secrets to builder configuration
 builder.Configuration.SetBasePath( AppDomain.CurrentDomain.BaseDirectory )
@@ -28,6 +29,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseEndpoints( endpoints =>
 {

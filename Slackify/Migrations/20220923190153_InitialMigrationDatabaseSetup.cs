@@ -8,6 +8,10 @@ public partial class InitialMigrationDatabaseSetup : Migration
 {
     protected override void Up( MigrationBuilder migrationBuilder )
     {
+        if( migrationBuilder is null )
+        {
+            throw new ArgumentNullException( nameof( migrationBuilder ), "migrationBuilder cannot be null" );
+        }
         migrationBuilder.CreateTable(
             name: "Slackify_Users",
             columns: table => new
@@ -63,6 +67,10 @@ public partial class InitialMigrationDatabaseSetup : Migration
 
     protected override void Down( MigrationBuilder migrationBuilder )
     {
+        if( migrationBuilder is null )
+        {
+            throw new ArgumentNullException( nameof( migrationBuilder ), "migrationBuilder cannot be null" );
+        }
         migrationBuilder.DropTable(
             name: "Slackify_Messages" );
 

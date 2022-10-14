@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
 
 namespace Slackify.Installers;
 
@@ -36,5 +38,20 @@ public class AuthSchemeInstaller : IInstaller
                     return Task.CompletedTask;
                 };
             } );
+
+        // Add Microsoft MSAL
+        if( configuration is null )
+        {
+            throw new ArgumentNullException( nameof( configuration ), "configuration cannot be null" );
+        }
+        services.AddAuthentication( JwtBearerDefaults.AuthenticationScheme )
+                .AddMicrosoftIdentityWebApi( configuration.GetSection( "AzureAd" ) )
+                    .EnableTokenAcquisitionToCallDownstreamApi()
+                        .AddMicrosoftGraph( configuration.GetSection( "MicrosoftGraph" ) )
+                            .AddInMemoryTokenCaches()
+                        .AddDownstreamWebApi( "DownstreamApi", configuration.GetSection( "DownstreamApi" ) )
+                            .AddInMemoryTokenCaches();
+
+        services.AddAuthorization();
     }
 }

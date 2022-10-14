@@ -33,8 +33,10 @@ public class ChatHub : Hub
     {
         try
         {
-            string? userEmail = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email )?.Value;
-            string? userName = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Name )?.Value;
+            string? userEmail = this.Context.User?.Claims.FirstOrDefault( claim =>
+                                    string.Equals( claim.Type, ClaimTypes.Email, StringComparison.OrdinalIgnoreCase ) )?.Value;
+            string? userName = this.Context.User?.Claims.FirstOrDefault( claim =>
+                                    string.Equals( claim.Type, ClaimTypes.Name, StringComparison.OrdinalIgnoreCase ) )?.Value;
 
             if( string.IsNullOrEmpty( userEmail ) == false )
             {
@@ -56,8 +58,10 @@ public class ChatHub : Hub
     {
         try
         {
-            string? userEmail = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email )?.Value;
-            string? userName = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Name )?.Value;
+            string? userEmail = this.Context.User?.Claims.FirstOrDefault( claim =>
+                                    string.Equals( claim.Type, ClaimTypes.Email, StringComparison.OrdinalIgnoreCase ) )?.Value;
+            string? userName = this.Context.User?.Claims.FirstOrDefault( claim =>
+                                    string.Equals( claim.Type, ClaimTypes.Name, StringComparison.OrdinalIgnoreCase ) )?.Value;
 
             if( string.IsNullOrEmpty( userEmail ) == false )
             {
@@ -79,9 +83,12 @@ public class ChatHub : Hub
 
     public async Task SendMessageAsync( string receiverEmail, string chatMessage )
     {
-        string? userEmail = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Email )?.Value;
-        string? userName = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == ClaimTypes.Name )?.Value;
-        string? userPicture = this.Context.User?.Claims.FirstOrDefault( claim => claim.Type == "picture" )?.Value;
+        string? userEmail = this.Context.User?.Claims.FirstOrDefault( claim =>
+                                string.Equals( claim.Type, ClaimTypes.Email, StringComparison.OrdinalIgnoreCase ) )?.Value;
+        string? userName = this.Context.User?.Claims.FirstOrDefault( claim =>
+                                string.Equals( claim.Type, ClaimTypes.Name, StringComparison.OrdinalIgnoreCase ) )?.Value;
+        string? userPicture = this.Context.User?.Claims.FirstOrDefault( claim =>
+                                string.Equals( claim.Type, "picture", StringComparison.OrdinalIgnoreCase ) )?.Value;
 
         if( ( string.IsNullOrEmpty( userEmail ) == false ) &&
             ( string.IsNullOrEmpty( userName ) == false ) )
@@ -102,7 +109,7 @@ public class ChatHub : Hub
             IEnumerable<string> receiverConnectionIds = this._connectionManager.GetConnections( receiverKey );
             IEnumerable<string> senderConnectionIds = this._connectionManager.GetConnections( senderKey );
 
-            if( receiverKey == senderKey )
+            if( string.Equals( receiverKey, senderKey, StringComparison.OrdinalIgnoreCase ) )
             {
                 foreach( string connectionId in receiverConnectionIds )
                 {

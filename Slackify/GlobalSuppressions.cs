@@ -10,3 +10,6 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage( "Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>" )]
 [assembly: SuppressMessage( "Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:Slackify.Installers.ServiceInstaller.InstallService(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)" )]
 [assembly: SuppressMessage( "Style", "IDE0058:Expression value is never used", Justification = "<Pending>" )]
+[assembly: SuppressMessage( "Performance", "CA1819:Properties should not return arrays", Justification = "<Pending>", Scope = "member", Target = "~P:Slackify.Properties.Settings.Scopes" )]
+[assembly: SuppressMessage( "Performance", "CA1819:Properties should not return arrays", Justification = "<Pending>", Scope = "member", Target = "~P:Slackify.MSALClient.IPublicClientApplicationWrapper.Scopes" )]
+[assembly: SuppressMessage( "Performance", "CA1819:Properties should not return arrays", Justification = "<Pending>", Scope = "member", Target = "~P:Slackify.MSALClient.PublicClientApplicationWrapper.Scopes" )]
